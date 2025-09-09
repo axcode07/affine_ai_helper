@@ -1,0 +1,17 @@
+your-llm-domain {
+  @responses path /v1/responses*
+  handle @responses {
+    reverse_proxy responses-adapter:4011
+  }
+  handle {
+    reverse_proxy litellm:4000
+  }
+  header Access-Control-Allow-Origin "https://your-affine-domain.com"
+  header Access-Control-Allow-Headers "Authorization, Content-Type"
+  header Access-Control-Allow-Methods "GET, POST, OPTIONS"
+}
+
+your-affine-domain {
+  encode zstd gzip
+  reverse_proxy affine_server:3010
+}

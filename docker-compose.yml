@@ -1,0 +1,35 @@
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    networks: [affine_net]
+    # ... your existing config
+
+  responses_adapter:
+    build: ./responses-adapter
+    container_name: responses-adapter
+    environment:
+      LITELLM_URL: http://litellm:4000      # internal URL, same network as LiteLLM
+      LITELLM_KEY: ${LITELLM_KEY}           # any non-empty if LiteLLM doesn’t enforce
+    networks: [affine_net]
+    expose:
+      - "4011"
+    depends_on:
+      - litellm
+
+  caddy:
+    image: caddy:2
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks: [affine_net]
+    ports:
+      - "80:80"
+      - "443:443"
+
+  affine:
+    image: ghcr.io/toeverything/affine:stable
+    container_name: affine_server
+    networks: [affine_net]
+    # ... your existing config
+
+networks:
+  affine_net: {}
