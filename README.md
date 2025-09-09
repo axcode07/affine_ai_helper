@@ -90,5 +90,4 @@ This adapter is intentionally minimal and can live inside your infra repo. Modif
 
 ###### Result: AFFiNE Copilot streams cleanly via your OpenAI-compatible LiteLLM/Ollama stack, with stable SSE and zero model/provider lock-in.
 
-❤️
-Made with love by AXCODE
+Made with ❤️ by AXCODE
