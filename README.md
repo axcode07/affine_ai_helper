@@ -1,27 +1,27 @@
-#### AFFiNE + LiteLLM “Responses → Chat” Adapter
+# AFFiNE + LiteLLM “Responses → Chat” Adapter
 
-## A tiny, production-friendly fix for connecting AFFiNE Copilot to LiteLLM/Ollama when AFFiNE streams to /v1/responses but your stack only supports /v1/chat/completions.
+#### A tiny, production-friendly fix for connecting AFFiNE Copilot to LiteLLM/Ollama when AFFiNE streams to /v1/responses but your stack only supports /v1/chat/completions.
 
 
-# Problem: AFFiNE (via the Vercel AI SDK) streams to /v1/responses and expects Responses-API SSE events. LiteLLM/Ollama speak OpenAI Chat Completions (/v1/chat/completions) and a different stream shape. Result:
+### Problem: AFFiNE (via the Vercel AI SDK) streams to /v1/responses and expects Responses-API SSE events. LiteLLM/Ollama speak OpenAI Chat Completions (/v1/chat/completions) and a different stream shape. Result:
 " Provider openai failed with unexpected_response: text part … not found "
 
-# Tried: Upgrading LiteLLM, reverse-proxy tricks, patching AFFiNE bundle to use Chat Completions. Too brittle/invasive.
+###### Tried: Upgrading LiteLLM, reverse-proxy tricks, patching AFFiNE bundle to use Chat Completions. Too brittle/invasive.
 
-# Solution: Drop in a small Node adapter that:
+##### Solution: Drop in a small Node adapter that:
  - Accepts POST /v1/responses
  - Calls LiteLLM POST /v1/chat/completions
  - Normalizes AFFiNE inputs to valid OpenAI chat messages
  - Streams back Responses-API SSE events with a stable item_id
  - Passes everything else (models/embeddings) straight to LiteLLM
 
-# Routing: Caddy sends only /v1/responses* to the adapter; everything else to LiteLLM.
+###### Routing: Caddy sends only /v1/responses* to the adapter; everything else to LiteLLM.
 
-# Note: In this example I am using a domain + ssl for both Affine and LiteLLM (running docker containers + ollama installed locally along)
+###### Note: In this example I am using a domain + ssl for both Affine and LiteLLM (running docker containers + ollama installed locally along)
 
-### Why this is needed
+##### Why this is needed
 
-# AFFiNE’s Copilot (Vercel AI SDK) uses an OpenAI-compatible Responses API. Its streaming contract requires a prelude:
+###### AFFiNE’s Copilot (Vercel AI SDK) uses an OpenAI-compatible Responses API. Its streaming contract requires a prelude:
  1. response.created
  2. response.output_item.added (declares the message item & id)
  3. response.content_part.added (declares the “text part” being streamed)
@@ -36,7 +36,7 @@ LiteLLM’s Chat Completions stream emits OpenAI chunks (choices[].delta.content
 
 The adapter bridges these two worlds.
 
-### Architecture
+#### Architecture
 
 AFFiNE UI
    │  baseURL: https://your-domain.com/v1
@@ -56,7 +56,7 @@ docker-compose.yml
 Caddyfile
 openai.ts -- this also must be changed
 
-## Build
+#### Build
 docker compose up -d --build responses_adapter
 docker cp openai.ts affine_server:/app/src/plugins/copilot/providers
 docker compose restart caddy
@@ -64,7 +64,7 @@ docker compose restart caddy
 ## Update - openai.ts must also be changed in order to use chat completion
 I have added the full file changed for chat completion (only steam function changed) - you can directly add this to your container and remove the original openai.ts
 
-## Troubleshooting
+#### Troubleshooting
 
 ENOTFOUND litellm in adapter
 The adapter isn’t on the same Docker network as LiteLLM. Attach both to affine_net (or use LITELLM_URL=http://caddy:80 to call through Caddy).
@@ -78,7 +78,7 @@ It’s cosmetic. Disable Anthropic provider and clear browser site data; scenari
 CORS/stream stalls
 Keep X-Accel-Buffering: no and avoid gzipping the SSE stream. The Caddy block above is safe.
 
-## Why this approach
+##### Why this approach
 
 No invasive patches to AFFiNE’s bundle
 
@@ -89,8 +89,10 @@ Touches only one endpoint (/v1/responses) and keeps the rest of your routing int
 Clear, auditable behavior
 
 
-# License / Notes
+##### License / Notes
 
 This adapter is intentionally minimal and can live inside your infra repo. Modify as needed (timeouts, logging, auth). It doesn’t persist data or log prompts by default.
 
-# Result: AFFiNE Copilot streams cleanly via your OpenAI-compatible LiteLLM/Ollama stack, with stable SSE and zero model/provider lock-in.
+###### Result: AFFiNE Copilot streams cleanly via your OpenAI-compatible LiteLLM/Ollama stack, with stable SSE and zero model/provider lock-in.
+
+Made with ❤️ by AXCODE
