@@ -1,5 +1,7 @@
 # AFFiNE + LiteLLM “Responses → Chat” Adapter
 
+Update: Please also add the openai.ts changed file and restart adapter in order for the responeses-adapter to work!
+
 #### A tiny, production-friendly fix for connecting AFFiNE Copilot to LiteLLM/Ollama when AFFiNE streams to /v1/responses but your stack only supports /v1/chat/completions.
 
 
