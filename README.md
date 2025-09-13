@@ -54,10 +54,15 @@ responses-adapter/
 └─ server.js     ← the adapter (drop-in)
 docker-compose.yml
 Caddyfile
+openai.ts -- this also must be changed
 
 ## Build
 docker compose up -d --build responses_adapter
+docker cp openai.ts affine_server:/app/src/plugins/copilot/providers
 docker compose restart caddy
+
+## Update - openai.ts must also be changed in order to use chat completion
+I have added the full file changed for chat completion (only steam function changed) - you can directly add this to your container and remove the original openai.ts
 
 ## Troubleshooting
 
